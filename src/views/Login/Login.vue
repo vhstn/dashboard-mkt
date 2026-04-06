@@ -1,12 +1,22 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { Boxes, Loader2 } from "lucide-vue-next";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const router = useRouter();
 const email = ref("");
 const password = ref("");
 const isLoading = ref(false);
 const errorMessage = ref("");
+const isErrorDialogOpen = ref(false);
 
 const handleLogin = async () => {
   if (!email.value || !password.value) return;
@@ -30,7 +40,8 @@ const handleLogin = async () => {
     );
 
     if (!response.ok) {
-      throw new Error("Credenciais inválidas ou erro no servidor.");
+      const apiMessage = await response.text();
+      throw new Error(JSON.parse(apiMessage).detail);
     }
 
     const data = await response.json();
@@ -40,6 +51,7 @@ const handleLogin = async () => {
     router.push("/dashboard");
   } catch (error: any) {
     errorMessage.value = error.message || "Falha ao conectar com o servidor.";
+    isErrorDialogOpen.value = true;
   } finally {
     isLoading.value = false;
   }
@@ -52,7 +64,7 @@ const handleLogin = async () => {
   >
     <div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
       <div class="flex justify-center mb-6">
-        <i class="fa-solid fa-cubes text-5xl text-vibrant-green"></i>
+        <Boxes class="w-12 h-12 text-vibrant-green" />
       </div>
 
       <div class="text-center mb-8">
@@ -95,20 +107,13 @@ const handleLogin = async () => {
           />
         </div>
 
-        <div
-          v-if="errorMessage"
-          class="text-red-500 text-sm text-center font-medium"
-        >
-          {{ errorMessage }}
-        </div>
-
         <button
           type="submit"
           :disabled="isLoading"
           class="w-full bg-vibrant-green hover:bg-vibrant-green/90 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 focus:ring-2 focus:ring-vibrant-green focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
         >
-          <span v-if="isLoading">
-            <i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Conectando...
+          <span v-if="isLoading" class="flex items-center">
+            <Loader2 class="w-4 h-4 mr-2 animate-spin" /> Conectando...
           </span>
           <span v-else>Entrar</span>
         </button>
@@ -124,6 +129,25 @@ const handleLogin = async () => {
           </button>
         </p>
       </div>
+
+      <Dialog v-model:open="isErrorDialogOpen">
+        <DialogContent class="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle class="text-red-600">Erro de Autenticação</DialogTitle>
+            <DialogDescription>
+              {{ errorMessage }}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              @click="isErrorDialogOpen = false"
+              class="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium py-2 px-4 rounded-lg transition-colors duration-200 mt-2"
+            >
+              Fechar
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   </div>
 </template>
