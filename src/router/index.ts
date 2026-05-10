@@ -1,35 +1,40 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import Login from '../views/Login/Login.vue';
-import Dashboard from '../views/Dashboard/Dashboard.vue';
+import { createRouter, createWebHistory } from "vue-router";
+import Login from "../views/Login/Login.vue";
+import Dashboard from "../views/Dashboard/Dashboard.vue";
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { 
-      path: '/', 
-      redirect: '/login' 
+    {
+      path: "/",
+      redirect: "/login",
     },
-    { 
-      path: '/login', 
-      name: 'Login', 
-      component: Login 
+    {
+      path: "/register",
+      name: "Register",
+      component: () => import("../views/Register/Register.vue"),
     },
-    { 
-      path: '/dashboard', 
-      name: 'Dashboard', 
+    {
+      path: "/login",
+      name: "Login",
+      component: Login,
+    },
+    {
+      path: "/dashboard",
+      name: "Dashboard",
       component: Dashboard,
-      meta: { requiresAuth: true } 
-    }
-  ]
+      meta: { requiresAuth: true },
+    },
+  ],
 });
 
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('@MktApp:token');
-  
+  const token = localStorage.getItem("@MktApp:token");
+
   if (to.meta.requiresAuth && !token) {
-    next('/login');
-  } else if (to.path === '/login' && token) {
-    next('/dashboard');
+    next("/login");
+  } else if (to.path === "/login" && token) {
+    next("/dashboard");
   } else {
     next();
   }
