@@ -25,6 +25,12 @@ const router = createRouter({
       component: Dashboard,
       meta: { requiresAuth: true },
     },
+    {
+      path: "/teams",
+      name: "Teams",
+      component: () => import("../views/Teams/Teams.vue"),
+      meta: { requiresAuth: true },
+    },
   ],
 });
 

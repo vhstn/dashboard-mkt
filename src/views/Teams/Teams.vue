@@ -1,0 +1,167 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import { Users, Loader2, Plus } from "lucide-vue-next";
+import { useRouter } from "vue-router";
+import AppSidebar from "@/components/layout/AppSidebar.vue";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
+const router = useRouter();
+const teamName = ref("");
+const isLoading = ref(false);
+const isSuccessDialogOpen = ref(false);
+const isErrorDialogOpen = ref(false);
+const errorMessage = ref("");
+
+const handleCreateTeam = async () => {
+  if (!teamName.value) return;
+
+  isLoading.value = true;
+  errorMessage.value = "";
+
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_RENDER_API_URL}/workflow/teams`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("@MktApp:token")}`,
+        },
+        body: JSON.stringify({
+          teamName: teamName.value,
+        }),
+      },
+    );
+
+    const rawText = await response.text();
+
+    if (!response.ok) {
+      let apiMessage = "Erro ao criar time.";
+      if (rawText) {
+        try {
+          const errorData = JSON.parse(rawText);
+          apiMessage =
+            errorData.message || errorData.detail || errorData.title || rawText;
+        } catch {
+          apiMessage = rawText;
+        }
+      }
+      throw new Error(apiMessage);
+    }
+
+    isSuccessDialogOpen.value = true;
+    teamName.value = "";
+  } catch (error: any) {
+    errorMessage.value =
+      error.message || "Falha na comunicação com o servidor.";
+    isErrorDialogOpen.value = true;
+  } finally {
+    isLoading.value = false;
+  }
+};
+</script>
+
+<template>
+  <div class="flex min-h-screen bg-gray-50">
+    <AppSidebar />
+
+    <div class="flex-1 overflow-auto">
+      <div class="p-8">
+    <div class="mb-8 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold text-gray-900 mb-2">
+          Gestão de Times
+        </h1>
+        <p class="text-gray-600">
+          Cadastre novas equipes para organizar o seu fluxo de trabalho.
+        </p>
+      </div>
+    </div>
+
+    <div
+      class="max-w-2xl bg-white rounded-xl shadow-sm border border-gray-200 p-8"
+    >
+      <form @submit.prevent="handleCreateTeam" class="space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Nome do Time</label
+          >
+          <div class="relative">
+            <Users class="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+            <input
+              v-model="teamName"
+              type="text"
+              placeholder="Ex: Marketing Digital, Vendas Internas..."
+              class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-vibrant-green focus:border-transparent outline-none transition-all text-gray-900"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-4">
+          <button
+            type="button"
+            @click="router.back()"
+            class="px-6 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            :disabled="isLoading || !teamName"
+            class="flex items-center bg-vibrant-green hover:bg-vibrant-green/90 text-white font-medium py-3 px-8 rounded-lg transition-all disabled:opacity-50"
+          >
+            <Loader2 v-if="isLoading" class="w-4 h-4 mr-2 animate-spin" />
+            <Plus v-else class="w-4 h-4 mr-2" />
+            Criar Time
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <Dialog v-model:open="isSuccessDialogOpen">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle class="text-vibrant-green">Sucesso!</DialogTitle>
+          <DialogDescription>
+            O time foi criado com sucesso.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <button
+            @click="isSuccessDialogOpen = false"
+            class="w-full bg-vibrant-green text-white py-2 rounded-lg"
+          >
+            Continuar
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <Dialog v-model:open="isErrorDialogOpen">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle class="text-red-600">Erro na Operação</DialogTitle>
+          <DialogDescription>{{ errorMessage }}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <button
+            @click="isErrorDialogOpen = false"
+            class="w-full bg-gray-100 py-2 rounded-lg"
+          >
+            Fechar
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+      </div>
+    </div>
+  </div>
+</template>
