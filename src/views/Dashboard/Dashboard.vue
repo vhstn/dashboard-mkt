@@ -1,25 +1,6 @@
 <script setup lang="ts">
-import {
-  LayoutDashboard,
-  FileText,
-  Building2,
-  BarChart3,
-  Settings,
-  LogOut,
-  Users,
-  DollarSign,
-} from "lucide-vue-next";
-
-const emit = defineEmits<{
-  (e: "navigate", page: string): void;
-}>();
-
-interface SidebarItems {
-  icon: any;
-  label: string;
-  active: boolean;
-  page: string;
-}
+import { FileText, Users, DollarSign } from "lucide-vue-next";
+import AppSidebar from "@/components/layout/AppSidebar.vue";
 
 interface StatsCards {
   title: string;
@@ -36,19 +17,6 @@ interface RecentActivities {
   time: string;
   user: string;
 }
-
-const sidebarItems: SidebarItems[] = [
-  {
-    icon: LayoutDashboard,
-    label: "Dashboard",
-    active: true,
-    page: "dashboard",
-  },
-  { icon: FileText, label: "Postagens", active: false, page: "posts" },
-  { icon: Building2, label: "Campanhas", active: false, page: "campaigns" },
-  { icon: BarChart3, label: "Relatórios", active: false, page: "analytics" },
-  { icon: Settings, label: "Configurações", active: false, page: "settings" },
-];
 
 const statsCards: StatsCards[] = [
   {
@@ -100,41 +68,8 @@ const recentActivities: RecentActivities[] = [
 </script>
 
 <template>
-  <div class="flex h-screen bg-gray-50">
-    <div class="w-64 bg-white shadow-sm border-r border-gray-200">
-      <div class="p-6">
-        <div class="flex items-center space-x-2">
-          <i class="fa-solid fa-cubes text-2xl text-vibrant-green"></i>
-          <span class="text-xl font-semibold text-gray-900">Dashboard</span>
-        </div>
-      </div>
-
-      <nav class="mt-6">
-        <button
-          v-for="(item, index) in sidebarItems"
-          :key="index"
-          @click="emit('navigate', item.page)"
-          :class="[
-            'flex items-center px-6 py-3 text-sm font-medium transition-colors duration-200 w-full text-left',
-            item.active
-              ? 'text-vibrant-green bg-soft-green/30 border-r-2 border-vibrant-green'
-              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
-          ]"
-        >
-          <component :is="item.icon" class="w-5 h-5 mr-3" />
-          {{ item.label }}
-        </button>
-      </nav>
-
-      <div class="absolute bottom-6 left-6">
-        <button
-          class="flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200"
-        >
-          <LogOut class="w-4 h-4 mr-2" />
-          Sair
-        </button>
-      </div>
-    </div>
+  <div class="flex min-h-screen bg-gray-50">
+    <AppSidebar />
 
     <div class="flex-1 overflow-auto">
       <div class="p-8">
