@@ -26,7 +26,7 @@ const handleLogin = async () => {
 
   try {
     const response = await fetch(
-      `${import.meta.env.VITE_RENDER_API_URL}/Identity/login`,
+      `${import.meta.env.VITE_RENDER_API_URL}/identity/tokens/login`,
       {
         method: "POST",
         headers: {
@@ -122,11 +122,12 @@ const handleLogin = async () => {
       <div class="text-center mt-6">
         <p class="text-sm text-gray-600">
           Não tem uma conta?
-          <button
+          <router-link
+            to="/register"
             class="text-vibrant-green hover:text-vibrant-green/80 font-medium transition-colors duration-200"
           >
             Cadastre-se
-          </button>
+          </router-link>
         </p>
       </div>
 
