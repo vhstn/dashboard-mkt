@@ -56,17 +56,51 @@ const handleRegister = async () => {
       }
       throw new Error(apiMessage);
     }
+  } catch (error: any) {
+    errorMessage.value = error.message || "Falha ao conectar com o servidor.";
+    isErrorDialogOpen.value = true;
+  }
+
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_RENDER_API_URL}/identity/tokens/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.value,
+          password: password.value,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      const rawText = await response.text();
+      let apiMessage = "Erro ao efetuar login. Tente novamente.";
+
+      if (rawText) {
+        try {
+          const errorData = JSON.parse(rawText);
+          apiMessage =
+            errorData.message || errorData.detail || errorData.title || rawText;
+        } catch {
+          apiMessage = rawText;
+        }
+      }
+      throw new Error(apiMessage);
+    }
 
     const data = await response.json();
 
-    localStorage.setItem("@MktApp:token", data);
-
-    router.push("dashboard");
+    localStorage.setItem("@MktApp:token", data.token);
   } catch (error: any) {
     errorMessage.value = error.message || "Falha ao conectar com o servidor.";
     isErrorDialogOpen.value = true;
   } finally {
     isLoading.value = false;
+    router.push("dashboard");
   }
 };
 </script>
