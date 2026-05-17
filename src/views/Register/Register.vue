@@ -15,12 +15,19 @@ const router = useRouter();
 const fullName = ref("");
 const email = ref("");
 const password = ref("");
+const confirmPassword = ref("");
 const isLoading = ref(false);
 const errorMessage = ref("");
 const isErrorDialogOpen = ref(false);
 
 const handleRegister = async () => {
-  if (!fullName.value || !email.value || !password.value) return;
+  if (!fullName.value || !email.value || !password.value || !confirmPassword.value) return;
+
+  if (password.value !== confirmPassword.value) {
+    errorMessage.value = "As senhas não coincidem.";
+    isErrorDialogOpen.value = true;
+    return;
+  }
 
   isLoading.value = true;
   errorMessage.value = "";
@@ -170,6 +177,22 @@ const handleRegister = async () => {
             <input
               type="password"
               v-model="password"
+              placeholder="••••••••"
+              class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-vibrant-green focus:border-transparent outline-none transition-all"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Confirmar Senha</label
+          >
+          <div class="relative">
+            <Lock class="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+            <input
+              type="password"
+              v-model="confirmPassword"
               placeholder="••••••••"
               class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-vibrant-green focus:border-transparent outline-none transition-all"
               required
