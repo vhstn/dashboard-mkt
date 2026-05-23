@@ -18,6 +18,10 @@ const isLoading = ref(false);
 const errorMessage = ref("");
 const isErrorDialogOpen = ref(false);
 
+const isResettingPassword = ref(false);
+const successMessage = ref("");
+const isSuccessDialogOpen = ref(false);
+
 const handleLogin = async () => {
   if (!email.value || !password.value) return;
 
@@ -54,6 +58,44 @@ const handleLogin = async () => {
     isErrorDialogOpen.value = true;
   } finally {
     isLoading.value = false;
+  }
+};
+
+const handleResetPassword = async () => {
+  if (!email.value) {
+    errorMessage.value = "Preencha o campo de e-mail para redefinir a senha.";
+    isErrorDialogOpen.value = true;
+    return;
+  }
+
+  isResettingPassword.value = true;
+  errorMessage.value = "";
+
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_RENDER_API_URL}/identity/tokens/reset-password`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email.value }),
+      },
+    );
+
+    if (!response.ok) {
+      const apiMessage = await response.text();
+      throw new Error(JSON.parse(apiMessage).detail);
+    }
+
+    successMessage.value =
+      "Você receberá as instruções para redefinir sua senha por e-mail.";
+    isSuccessDialogOpen.value = true;
+  } catch (error: any) {
+    errorMessage.value = error.message || "Falha ao conectar com o servidor.";
+    isErrorDialogOpen.value = true;
+  } finally {
+    isResettingPassword.value = false;
   }
 };
 </script>
@@ -93,11 +135,11 @@ const handleLogin = async () => {
         </div>
 
         <div>
-          <label
-            for="password"
+            <label
+              for="password"
             class="block text-sm font-medium text-gray-700 mb-2"
-            >Senha</label
-          >
+              >Senha</label
+            >
           <input
             id="password"
             type="password"
@@ -105,6 +147,14 @@ const handleLogin = async () => {
             placeholder="••••••••"
             class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-vibrant-green focus:border-transparent transition-all duration-200 text-solid-black placeholder-gray-400"
           />
+          <button
+            type="button"
+            @click="handleResetPassword"
+            :disabled="isResettingPassword"
+            class="text-xs text-vibrant-green hover:text-vibrant-green/80 font-medium transition-colors disabled:opacity-50"
+          >
+            {{ isResettingPassword ? "Enviando..." : "Esqueceu a senha?" }}
+          </button>
         </div>
 
         <button
@@ -134,7 +184,7 @@ const handleLogin = async () => {
       <Dialog v-model:open="isErrorDialogOpen">
         <DialogContent class="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle class="text-red-600">Erro de Autenticação</DialogTitle>
+            <DialogTitle class="text-red-600">Erro</DialogTitle>
             <DialogDescription>
               {{ errorMessage }}
             </DialogDescription>
@@ -145,6 +195,27 @@ const handleLogin = async () => {
               class="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium py-2 px-4 rounded-lg transition-colors duration-200 mt-2"
             >
               Fechar
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog v-model:open="isSuccessDialogOpen">
+        <DialogContent class="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle class="text-vibrant-green"
+              >Recuperação de Senha</DialogTitle
+            >
+            <DialogDescription>
+              {{ successMessage }}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              @click="isSuccessDialogOpen = false"
+              class="w-full bg-vibrant-green hover:bg-vibrant-green/90 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 mt-2"
+            >
+              Entendi
             </button>
           </DialogFooter>
         </DialogContent>
