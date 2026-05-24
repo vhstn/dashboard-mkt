@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Login from "../views/Login/Login.vue";
+import Register from "@/views/Register/Register.vue";
 import Dashboard from "../views/Dashboard/Dashboard.vue";
+import Teams from "@/views/Teams/Teams.vue";
+import Posts from "@/views/Posts/Posts.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -10,14 +13,14 @@ const router = createRouter({
       redirect: "/login",
     },
     {
-      path: "/register",
-      name: "Register",
-      component: () => import("../views/Register/Register.vue"),
-    },
-    {
       path: "/login",
       name: "Login",
       component: Login,
+    },
+    {
+      path: "/register",
+      name: "Register",
+      component: () => Register,
     },
     {
       path: "/dashboard",
@@ -28,7 +31,13 @@ const router = createRouter({
     {
       path: "/teams",
       name: "Teams",
-      component: () => import("../views/Teams/Teams.vue"),
+      component: () => Teams,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/posts",
+      name: "Posts",
+      component: () => Posts,
       meta: { requiresAuth: true },
     },
   ],
