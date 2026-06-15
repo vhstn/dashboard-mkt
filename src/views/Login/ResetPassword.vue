@@ -46,6 +46,10 @@ const handleResetPassword = async () => {
   errorMessage.value = "";
 
   try {
+    const rawToken = (route.query.token as string) || "";
+
+    const sanitizedToken = rawToken.replace(/ /g, "+").replace(/[\r\n]/g, "");
+
     const response = await fetch(
       `${import.meta.env.VITE_RENDER_API_URL}/identity/users/reset-password/confirm`,
       {
@@ -55,7 +59,7 @@ const handleResetPassword = async () => {
         },
         body: JSON.stringify({
           email: route.query.email,
-          token: route.query.token,
+          token: sanitizedToken,
           newPassword: password.value,
         }),
       },
