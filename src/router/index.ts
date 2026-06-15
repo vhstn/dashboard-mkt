@@ -21,12 +21,12 @@ const router = createRouter({
     {
       path: "/register",
       name: "Register",
-      component: () => Register,
+      component: Register,
     },
     {
       path: "/reset-password",
       name: "ResetPassword",
-      component: () => ResetPassword,
+      component: ResetPassword,
     },
     {
       path: "/dashboard",
@@ -37,13 +37,13 @@ const router = createRouter({
     {
       path: "/teams",
       name: "Teams",
-      component: () => Teams,
+      component: Teams,
       meta: { requiresAuth: true },
     },
     {
       path: "/posts",
       name: "Posts",
-      component: () => Posts,
+      component: Posts,
       meta: { requiresAuth: true },
     },
   ],
