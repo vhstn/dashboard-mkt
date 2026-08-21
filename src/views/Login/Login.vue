@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { Boxes, Loader2 } from "lucide-vue-next";
+import { apiFetch } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -12,15 +13,26 @@ import {
 } from "@/components/ui/dialog";
 
 const router = useRouter();
+const route = useRoute();
 const email = ref("");
 const password = ref("");
 const isLoading = ref(false);
 const errorMessage = ref("");
 const isErrorDialogOpen = ref(false);
+const isExpiredSession = ref(false);
 
 const isResettingPassword = ref(false);
 const successMessage = ref("");
 const isSuccessDialogOpen = ref(false);
+
+onMounted(() => {
+  if (route.query.expired === "true") {
+    isExpiredSession.value = true;
+    errorMessage.value = "Sua sessão expirou. Por favor, faça login novamente.";
+    isErrorDialogOpen.value = true;
+    router.replace("/login");
+  }
+});
 
 const handleLogin = async () => {
   if (!email.value || !password.value) return;
@@ -29,19 +41,16 @@ const handleLogin = async () => {
   errorMessage.value = "";
 
   try {
-    const response = await fetch(
-      `${import.meta.env.VITE_RENDER_API_URL}/identity/tokens/login`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email.value,
-          password: password.value,
-        }),
+    const response = await apiFetch("/identity/tokens/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value,
+      }),
+    });
 
     if (!response.ok) {
       const apiMessage = await response.text();
@@ -72,16 +81,13 @@ const handleResetPassword = async () => {
   errorMessage.value = "";
 
   try {
-    const response = await fetch(
-      `${import.meta.env.VITE_RENDER_API_URL}/identity/tokens/reset-password`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: email.value }),
+    const response = await apiFetch("/identity/tokens/reset-password", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({ email: email.value }),
+    });
 
     if (!response.ok) {
       const apiMessage = await response.text();
@@ -135,11 +141,11 @@ const handleResetPassword = async () => {
         </div>
 
         <div>
-            <label
-              for="password"
+          <label
+            for="password"
             class="block text-sm font-medium text-gray-700 mb-2"
-              >Senha</label
-            >
+            >Senha</label
+          >
           <input
             id="password"
             type="password"

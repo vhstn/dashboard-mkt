@@ -10,6 +10,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { apiFetch } from "@/lib/api";
 
 const route = useRoute();
 const router = useRouter();
@@ -50,20 +51,17 @@ const handleResetPassword = async () => {
 
     const sanitizedToken = rawToken.replace(/ /g, "+").replace(/[\r\n]/g, "");
 
-    const response = await fetch(
-      `${import.meta.env.VITE_RENDER_API_URL}/identity/users/reset-password/confirm`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: route.query.email,
-          token: sanitizedToken,
-          newPassword: password.value,
-        }),
+    const response = await apiFetch("/identity/users/reset-password/confirm", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        email: route.query.email,
+        token: sanitizedToken,
+        newPassword: password.value,
+      }),
+    });
 
     const rawText = await response.text();
 

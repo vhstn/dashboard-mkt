@@ -10,6 +10,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { apiFetch } from "@/lib/api";
 
 const router = useRouter();
 const fullName = ref("");
@@ -21,7 +22,13 @@ const errorMessage = ref("");
 const isErrorDialogOpen = ref(false);
 
 const handleRegister = async () => {
-  if (!fullName.value || !email.value || !password.value || !confirmPassword.value) return;
+  if (
+    !fullName.value ||
+    !email.value ||
+    !password.value ||
+    !confirmPassword.value
+  )
+    return;
 
   if (password.value !== confirmPassword.value) {
     errorMessage.value = "As senhas não coincidem.";
@@ -33,20 +40,17 @@ const handleRegister = async () => {
   errorMessage.value = "";
 
   try {
-    const response = await fetch(
-      `${import.meta.env.VITE_RENDER_API_URL}/identity/users`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fullName: fullName.value,
-          email: email.value,
-          password: password.value,
-        }),
+    const response = await apiFetch("/identity/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        fullName: fullName.value,
+        email: email.value,
+        password: password.value,
+      }),
+    });
 
     if (!response.ok) {
       const rawText = await response.text();
@@ -65,19 +69,16 @@ const handleRegister = async () => {
     }
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_RENDER_API_URL}/identity/tokens/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: email.value,
-            password: password.value,
-          }),
+      const response = await apiFetch("/identity/tokens/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          email: email.value,
+          password: password.value,
+        }),
+      });
 
       if (!response.ok) {
         const rawText = await response.text();
@@ -107,12 +108,11 @@ const handleRegister = async () => {
     } finally {
       router.push("dashboard");
     }
-
   } catch (error: any) {
     errorMessage.value = error.message || "Falha ao conectar com o servidor.";
     isErrorDialogOpen.value = true;
   }
-  
+
   isLoading.value = false;
 };
 </script>

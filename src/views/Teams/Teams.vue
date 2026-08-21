@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { apiFetch } from "@/lib/api";
 
 const router = useRouter();
 const teamName = ref("");
@@ -33,14 +34,11 @@ const isFetching = ref(true);
 const fetchTeams = async () => {
   isFetching.value = true;
   try {
-    const response = await fetch(
-      `${import.meta.env.VITE_RENDER_API_URL}/identity/users/me/teams`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("@MktApp:token")}`,
-        },
+    const response = await apiFetch("/identity/users/me/teams", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("@MktApp:token")}`,
       },
-    );
+    });
 
     if (!response.ok) throw new Error("Erro ao carregar times");
 
@@ -65,19 +63,16 @@ const handleCreateTeam = async () => {
   errorMessage.value = "";
 
   try {
-    const response = await fetch(
-      `${import.meta.env.VITE_RENDER_API_URL}/workflow/teams`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("@MktApp:token")}`,
-        },
-        body: JSON.stringify({
-          teamName: teamName.value,
-        }),
+    const response = await apiFetch("/workflow/teams", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("@MktApp:token")}`,
       },
-    );
+      body: JSON.stringify({
+        teamName: teamName.value,
+      }),
+    });
 
     const rawText = await response.text();
 

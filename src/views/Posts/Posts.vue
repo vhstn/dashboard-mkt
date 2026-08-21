@@ -28,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { apiFetch } from "@/lib/api";
 
 const router = useRouter();
 
@@ -59,14 +60,11 @@ const getToken = () => localStorage.getItem("@MktApp:token");
 const fetchPosts = async () => {
   isFetching.value = true;
   try {
-    const response = await fetch(
-      `${import.meta.env.VITE_RENDER_API_URL}/identity/users/me/posts`,
-      {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
+    const response = await apiFetch("/identity/users/me/posts", {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
       },
-    );
+    });
 
     if (!response.ok) throw new Error("Erro ao carregar postagens.");
 
@@ -95,14 +93,11 @@ const downloadAsset = async (mediaId: string, fileName: string) => {
 
   isDownloading.value[mediaId] = true;
   try {
-    const response = await fetch(
-      `${import.meta.env.VITE_RENDER_API_URL}/media/files/${mediaId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
+    const response = await apiFetch(`/media/files/${mediaId}`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
       },
-    );
+    });
 
     if (!response.ok) throw new Error("Falha ao baixar o arquivo.");
 
@@ -150,17 +145,14 @@ const handleSubmit = async () => {
   try {
     // 1. Criar Postagem
     statusMessage.value = "Criando postagem...";
-    const postResponse = await fetch(
-      `${import.meta.env.VITE_RENDER_API_URL}/media/posts`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
-        },
-        body: JSON.stringify({ caption: caption.value }),
+    const postResponse = await apiFetch("/media/posts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`,
       },
-    );
+      body: JSON.stringify({ caption: caption.value }),
+    });
 
     if (!postResponse.ok) await throwApiError(postResponse);
     const rawPostId = await postResponse.text();
@@ -175,33 +167,27 @@ const handleSubmit = async () => {
         const formData = new FormData();
         formData.append("file", file);
 
-        const uploadResponse = await fetch(
-          `${import.meta.env.VITE_RENDER_API_URL}/media/files`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-            },
-            body: formData,
+        const uploadResponse = await apiFetch("/media/files", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
           },
-        );
+          body: formData,
+        });
 
         if (!uploadResponse.ok) await throwApiError(uploadResponse);
         const rawMediaId = await uploadResponse.text();
         const mediaId = rawMediaId.replace(/^"|"$/g, "");
 
         statusMessage.value = `Vinculando arquivo ${i + 1}...`;
-        const linkResponse = await fetch(
-          `${import.meta.env.VITE_RENDER_API_URL}/media/posts/${postId}/assets`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${getToken()}`,
-            },
-            body: JSON.stringify({ mediaId: mediaId, sequenceOrder: i + 1 }),
+        const linkResponse = await apiFetch(`/media/posts/${postId}/assets`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getToken()}`,
           },
-        );
+          body: JSON.stringify({ mediaId: mediaId, sequenceOrder: i + 1 }),
+        });
 
         if (!linkResponse.ok) await throwApiError(linkResponse);
       }
